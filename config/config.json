@@ -1,0 +1,11 @@
+{
+  "server": {
+    "name": "Test Classic Server",
+    "motd": "Hello, World!",
+    "port": 25565
+  },
+
+  "save": {
+    "file": "save.dat"
+  }
+}
