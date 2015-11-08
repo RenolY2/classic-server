@@ -1,6 +1,12 @@
+import random
 import socket
+import string
 import threading
 import time
+
+import urllib.request
+import urllib.parse
+
 from classicserver.connection import Connection
 from classicserver.packet_handler import PacketHandler
 from classicserver.player import Player
@@ -30,15 +36,18 @@ class ClassicServer(object):
     _motd = ""
 
     _save_file = ""
+    _heartbeat_url = ""
+    _salt = ""
 
     _world = None
 
-    def __init__(self, bind_address, server_name="", motd="", save_file=""):
+    def __init__(self, bind_address, server_name="", motd="", save_file="", heartbeat_url=""):
         self._bind_address = bind_address
         self._running = False
         self._server_name = server_name
         self._motd = motd
         self._save_file = save_file
+        self._heartbeat_url = heartbeat_url
 
         self._packet_handler = PacketHandler(self)
 
@@ -50,6 +59,24 @@ class ClassicServer(object):
 
     def data_hook(self, client, data):
         self._packet_handler.handle_packet(client, data)
+
+    def _heartbeat_thread(self):
+        while self._running:
+            try:
+                f = urllib.request.urlopen(self._heartbeat_url + (
+                    "?port=%d&max=32&name=%s&public=True&version=7&salt=%s&users=%d" % (
+                    self._bind_address[1], urllib.parse.quote(self._server_name, safe=""), self._salt,
+                        len(self._players))
+                ))
+
+                data = f.read()
+
+                print("[HEARTBEAT] Heartbeat sent, json response: %s" % data.decode("utf-8"))
+
+            except BaseException as ex:
+                print("[HEARTBEAT] Heartbeat failed: %s" % repr(ex))
+
+            time.sleep(45)
 
     def _save_thread(self):
         while self._running:
@@ -118,12 +145,15 @@ class ClassicServer(object):
             self.broadcast(make_packet(MessagePacket, {"unused": 0xFF, "message": "%s&f has quit"}))
 
     def _start(self):
+        self.generate_salt()
         self.load_world()
         self._running = True
         threading.Thread(target=self._save_thread).start()
         threading.Thread(target=self._connection_thread).start()
         threading.Thread(target=self._flush_thread).start()
         threading.Thread(target=self._keep_alive_thread).start()
+        if self._heartbeat_url:
+            threading.Thread(target=self._heartbeat_thread).start()
 
     def _stop(self):
         self.save_world()
@@ -147,6 +177,12 @@ class ClassicServer(object):
         save_file.flush()
         save_file.close()
 
+    def generate_salt(self):
+        BASE_62 = string.ascii_letters + string.digits
+        # generate a 16-char salt
+        salt = [random.choice(BASE_62) for i in range(16)]
+        self._salt = salt
+
     def add_player(self, connection, coordinates, name):
         """
 
@@ -167,12 +203,15 @@ class ClassicServer(object):
 
     def get_player(self, player_id):
         return self._players[player_id]
-    
+
     def get_player_by_address(self, address):
         return self._players_by_address[address]
 
     def get_world(self):
         return self._world
+
+    def get_salt(self):
+        return self._salt
 
     def __del__(self):
         self._stop()

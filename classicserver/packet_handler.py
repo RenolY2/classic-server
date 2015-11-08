@@ -1,3 +1,4 @@
+import hashlib
 from classicserver.packet.buffer import ReadBuffer
 from classicserver.packet.packets import *
 from classicserver.packet.utils import *
@@ -26,6 +27,11 @@ class PacketHandler(object):
                 break
 
             if packet == PlayerIdentificationPacket:
+                if fields["key"] == hashlib.md5(fields["username"] + self._server.get_salt()).digest():
+                    print("[INFO] Player %s is verified" % fields["username"])
+                else:
+                    print("[INFO] Unable to verify player %s")
+
                 sendbuf = make_packet(ServerIdentificationPacket, {
                     "protocol_version": 7,
                     "server_name": self._server.get_name(),
