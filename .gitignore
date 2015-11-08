@@ -60,3 +60,6 @@ target/
 
 # Saved levels
 save.dat
+
+# Idea / PyCharm  stuff
+.idea
