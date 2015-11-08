@@ -90,6 +90,8 @@ class ClassicServer(object):
             except BaseException as ex:
                 print("[AUTOSAVE] Autosaving failed: %s" % repr(ex))
 
+        self.save_world()
+
     def _keep_alive_thread(self):
         while self._running:
             try:
@@ -156,7 +158,6 @@ class ClassicServer(object):
             threading.Thread(target=self._heartbeat_thread).start()
 
     def _stop(self):
-        self.save_world()
         self._running = False
         self._sock.close()
 
@@ -180,7 +181,7 @@ class ClassicServer(object):
     def generate_salt(self):
         BASE_62 = string.ascii_letters + string.digits
         # generate a 16-char salt
-        salt = [random.choice(BASE_62) for i in range(16)]
+        salt = "".join([random.choice(BASE_62) for i in range(16)])
         self._salt = salt
 
     def add_player(self, connection, coordinates, name):

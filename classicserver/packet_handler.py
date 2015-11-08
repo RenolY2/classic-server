@@ -27,10 +27,11 @@ class PacketHandler(object):
                 break
 
             if packet == PlayerIdentificationPacket:
-                if fields["key"] == hashlib.md5(fields["username"] + self._server.get_salt()).digest():
+                if fields["key"] == hashlib.md5((fields["username"] + self._server.get_salt()).encode("utf-8"))\
+                        .digest():
                     print("[INFO] Player %s is verified" % fields["username"])
                 else:
-                    print("[INFO] Unable to verify player %s")
+                    print("[INFO] Unable to verify player %s" % fields["username"])
 
                 sendbuf = make_packet(ServerIdentificationPacket, {
                     "protocol_version": 7,
