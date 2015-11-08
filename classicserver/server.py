@@ -6,7 +6,7 @@ from classicserver.packet_handler import PacketHandler
 from classicserver.player import Player
 from classicserver.world import World
 
-from classicserver.packet.utils import PacketUtils
+from classicserver.packet.utils import *
 from classicserver.packet.packets import *
 
 
@@ -54,7 +54,7 @@ class ClassicServer(object):
     def _save_thread(self):
         while self._running:
             try:
-                self.broadcast(PacketUtils.make_packet(MessagePacket, {
+                self.broadcast(make_packet(MessagePacket, {
                     "unused": 0xFF,
                     "message": "Autosaving the world..."
                 }))
@@ -69,7 +69,7 @@ class ClassicServer(object):
                 connections = [x for x in self._connections.values()]
                 for connection in connections:
                     try:
-                        connection.send(PacketUtils.make_packet(PingPacket, {}))
+                        connection.send(make_packet(PingPacket, {}))
                     except IOError:
                         self._disconnect(connection)
                 time.sleep(30)
@@ -114,8 +114,8 @@ class ClassicServer(object):
             print("[SERVER] Player %s has quit!" % player.name)
             del self._players_by_address[connection.get_address()]
             del self._players[player.player_id]
-            self.broadcast(PacketUtils.make_packet(DespawnPlayerPacket, {"player_id": player.player_id}))
-            self.broadcast(PacketUtils.make_packet(MessagePacket, {"unused": 0xFF, "message": "%s&f has quit"}))
+            self.broadcast(make_packet(DespawnPlayerPacket, {"player_id": player.player_id}))
+            self.broadcast(make_packet(MessagePacket, {"unused": 0xFF, "message": "%s&f has quit"}))
 
     def _start(self):
         self.load_world()

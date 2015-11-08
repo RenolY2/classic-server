@@ -2,21 +2,19 @@ from classicserver.packet.buffer import WriteBuffer
 from classicserver.packet.packets import *
 
 
-class PacketUtils(object):
-    @staticmethod
-    def from_buffer(buf, to_server):
-        packets = CLIENT_TO_SERVER if to_server else SERVER_TO_CLIENT
-        packet_id = ord(buf.read(1, False))
+def from_buffer(buf, to_server):
+    packets = CLIENT_TO_SERVER if to_server else SERVER_TO_CLIENT
+    packet_id = ord(buf.read(1, False))
 
-        if packet_id in packets:
-            packet = packets[packet_id]
-            fields = packet().decode(buf)
-            return packet, fields
-        else:
-            raise ValueError("Invalid packet ID")
+    if packet_id in packets:
+        packet = packets[packet_id]
+        fields = packet().decode(buf)
+        return packet, fields
+    else:
+        raise ValueError("Invalid packet ID")
 
-    @staticmethod
-    def make_packet(packet, values):
-        buf = WriteBuffer()
-        packet().encode(buf, values)
-        return buf.get_buffer()
+
+def make_packet(packet, values):
+    buf = WriteBuffer()
+    packet().encode(buf, values)
+    return buf.get_buffer()
