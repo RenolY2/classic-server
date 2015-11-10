@@ -1,8 +1,7 @@
 import hashlib
-from classicserver.packet.buffer import ReadBuffer
-from classicserver.packet.packets import *
-from classicserver.packet.utils import *
 
+from classicserver.packet.buffer import ReadBuffer
+from classicserver.packet.packet import *
 from classicserver.world import *
 
 
@@ -21,7 +20,7 @@ class PacketHandler(object):
 
         while buf.left() > 0:
             try:
-                packet, fields = from_buffer(buf, True)
+                packet, fields = Packet.from_buffer(buf, True)
             except BaseException as e:
                 print("Unable to decode packets: %s" % repr(e))
                 break
@@ -33,7 +32,7 @@ class PacketHandler(object):
                 else:
                     print("[INFO] Unable to verify player %s" % fields["username"])
 
-                sendbuf = make_packet(ServerIdentificationPacket, {
+                sendbuf = ServerIdentificationPacket.make({
                     "protocol_version": 7,
                     "server_name": self._server.get_name(),
                     "server_motd": self._server.get_motd(),
@@ -43,16 +42,16 @@ class PacketHandler(object):
                 chunk = self._server.get_world().encode()
                 parts = [chunk[i: i + 1024] for i in range(0, len(chunk), 1024)]
 
-                sendbuf += make_packet(LevelInitializePacket, {})
+                sendbuf += LevelInitializePacket.make()
 
                 for count, part in enumerate(parts):
-                    sendbuf += make_packet(LevelDataChunkPacket, {
+                    sendbuf += LevelDataChunkPacket.make({
                         "chunk_length": len(part),
                         "chunk": part,
                         "percent": int((100/len(parts))*count)
                     })
 
-                sendbuf += make_packet(LevelFinalizePacket, {
+                sendbuf += LevelFinalizePacket.make({
                     "x": WORLD_WIDTH,
                     "y": WORLD_HEIGHT,
                     "z": WORLD_DEPTH
@@ -65,7 +64,7 @@ class PacketHandler(object):
                 player_id = self._server.add_player(connection, None, username)
                 player = self._server.get_player(player_id)
 
-                connection.send(make_packet(PositionAndOrientationPacket, {
+                connection.send(PositionAndOrientationPacket.make({
                     "player_id": -1,
                     "frac_x": int(player.coordinates[0]*32),
                     "frac_y": int(player.coordinates[1]*32),
@@ -74,7 +73,7 @@ class PacketHandler(object):
                     "pitch": 0
                 }))
 
-                self._server.broadcast(make_packet(SpawnPlayerPacket, {
+                self._server.broadcast(SpawnPlayerPacket.make({
                     "player_id": player.player_id,
                     "username": player.name,
                     "x": int(player.coordinates[0]),
@@ -84,7 +83,7 @@ class PacketHandler(object):
                     "pitch": 0
                 }), [connection.get_address()])
 
-                self._server.broadcast(make_packet(MessagePacket, {
+                self._server.broadcast(MessagePacket.make({
                     "unused": 0xFF,
                     "message": "%s has joined!" % player.name
                 }))
@@ -100,7 +99,7 @@ class PacketHandler(object):
 
                 fields["player_id"] = player.player_id
 
-                self._server.broadcast(make_packet(PositionAndOrientationPacket, fields))
+                self._server.broadcast(PositionAndOrientationPacket.make(fields))
 
             elif packet == SetBlockPacket:
                 x, y, z = fields["x"], fields["y"], fields["z"]
@@ -112,7 +111,7 @@ class PacketHandler(object):
                     if mode == 0:
                         block_type = 0
 
-                    self._server.broadcast(make_packet(BlockUpdatePacket, {
+                    self._server.broadcast(BlockUpdatePacket.make({
                         "x": x,
                         "y": y,
                         "z": z,
@@ -125,7 +124,7 @@ class PacketHandler(object):
                 player = self._server.get_player_by_address(connection.get_address())
                 message = fields["message"]
 
-                self._server.broadcast(make_packet(MessagePacket, {
+                self._server.broadcast(MessagePacket.make({
                     "unused": 255,
                     "message": "[%s] &a%s" % (player.name, message)
                 }))
