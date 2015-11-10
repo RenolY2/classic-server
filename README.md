@@ -8,16 +8,19 @@ Usage
 Configuration
 -------------
 To change the configuration, edit the file `config/config.json` as shown below:
-    {
-      "server": {
-        "name": "<server name>",
-        "motd": "<message of the day>",
-        "port": <port, using 25565 is recommended, make sure that no confilicts occur>
-      },
-    
-      "save": {
-        "file": "<to save the map, please specify the path to save the map in>"
-      },
-    
-      "heartbeat_url": "<heartbeat url, you will need to change that for Minecraft.net instead of ClassiCube>"
-    }
+
+```
+{
+  "server": {
+    "name": "<server name>",
+    "motd": "<message of the day>",
+    "port": <port, using 25565 is recommended, make sure that no confilicts occur>
+  },
+
+  "save": {
+    "file": "<to save the map, please specify the path to save the map in>"
+  },
+
+  "heartbeat_url": "<heartbeat url, you will need to change that for Minecraft.net instead of ClassiCube>"
+}
+```
