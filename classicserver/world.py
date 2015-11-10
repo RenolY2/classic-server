@@ -32,4 +32,4 @@ class World(object):
 
     @staticmethod
     def from_save(data):
-        return World(gzip.decompress(data)[4:])
+        return World(bytearray(gzip.decompress(data)[4:]))
