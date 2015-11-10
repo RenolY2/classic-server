@@ -24,3 +24,7 @@ To change the configuration, edit the file `config/config.json` as shown below:
   "heartbeat_url": "<heartbeat url, you will need to change that for Minecraft.net instead of ClassiCube>"
 }
 ```
+
+Legal
+-----
+Minecraft is a registered trademark of Mojang AB. This project is not in any way affilitated with Mojang AB or Minecraft.
