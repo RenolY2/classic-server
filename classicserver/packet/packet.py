@@ -2,27 +2,32 @@ from classicserver.packet.buffer import WriteBuffer
 from classicserver.packet.field.data_types import ByteField, StringField, ShortField, SignedByteField, ByteArrayField
 
 
-class BasePacket(object):
-    ID = None
-
-    def encode(self, buf, values):
-        pass
-
-    def decode(self, buf):
-        pass
-
-
-class Packet(BasePacket):
+class Packet(object):
     ID = -1
 
     FIELDS = []
 
     def encode(self, buf, values):
+        """
+        Encodes a packet to a WriteBuffer.
+
+        :param buf: A packet.buffer.Buffer object to which the packet is encoded.
+        :type buf: WriteBuffer
+        :param values: Field values for encoding
+        :type values: dict
+        """
         ByteField().encode(buf, self.ID)
         for field in self.FIELDS:
             field.encode(buf, values[field.get_name()])
 
     def decode(self, buf):
+        """
+        Decodes a packet from a ReadBuffer
+        :param buf: A ReadBuffer object to decode the packet from.
+        :type buf: ReadBuffer
+        :return: The decoded field values
+        :rtype: dict
+        """
         if (ByteField().decode(buf) != self.ID) and not (self.ID == -1):
             raise ValueError("Invalid packet ID")
 
@@ -34,6 +39,15 @@ class Packet(BasePacket):
 
     @staticmethod
     def from_buffer(buf, to_server):
+        """
+        Decodes the packet from a ReadBuffer
+        :param buf: A ReadBuffer-like object to decode the packet from.
+        :type buf: ReadBuffer
+        :param to_server: Specifies which packet set to use.
+        :type to_server: bool
+        :return: The decoded fields.
+        :rtype: dict
+        """
         packets = CLIENT_TO_SERVER if to_server else SERVER_TO_CLIENT
         packet_id = ord(buf.read(1, False))
 
@@ -46,6 +60,14 @@ class Packet(BasePacket):
 
     @classmethod
     def make(cls, values=None):
+        """
+        Makes a Python buffer with the encoded packet.
+        :param values: The field values to use.
+        :type values: dict
+        :return: The buffer with the encoded packet.
+        :rtype: buffer
+        """
+
         if not values:
             values = {}
 
