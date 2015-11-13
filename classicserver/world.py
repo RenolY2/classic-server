@@ -23,11 +23,13 @@ WORLD_WIDTH = 256
 WORLD_HEIGHT = 64
 WORLD_DEPTH = 256
 
+
 class World(object):
     def __init__(self, blocks=None):
         self.blocks = blocks if blocks else self._generate()
 
-    def _generate(self):
+    @staticmethod
+    def _generate():
         print("[WORLD] Generating...")
         blocks = bytearray(WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH)
 

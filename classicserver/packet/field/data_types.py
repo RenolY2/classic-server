@@ -20,7 +20,7 @@ class StringField(BaseField):
     def encode(self, buf, val):
         raw = val.encode("ascii")
         raw = raw[:64]  # Trim
-        pad = 64-len(val)
+        pad = 64 - len(val)
         raw += (pad * b" ")
         buf.write(raw)
 
@@ -31,6 +31,6 @@ class ByteArrayField(BaseField):
 
     def encode(self, buf, val):
         val = val[:1024]
-        pad = 1024-len(val)
+        pad = 1024 - len(val)
         val += (b"\0" * pad)
         buf.write(val)

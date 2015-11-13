@@ -17,6 +17,7 @@
 """
 
 import json
+
 from classicserver.server import ClassicServer
 
 config = json.load(open("config/config.json"))

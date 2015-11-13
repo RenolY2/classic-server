@@ -44,7 +44,7 @@ class PacketHandler(object):
                 break
 
             if packet == PlayerIdentificationPacket:
-                if fields["key"] == hashlib.md5((fields["username"] + self._server.get_salt()).encode("utf-8"))\
+                if fields["key"] == hashlib.md5((fields["username"] + self._server.get_salt()).encode("utf-8")) \
                         .digest():
                     print("[INFO] Player %s is verified" % fields["username"])
                 else:
@@ -66,7 +66,7 @@ class PacketHandler(object):
                     sendbuf += LevelDataChunkPacket.make({
                         "chunk_length": len(part),
                         "chunk": part,
-                        "percent": int((100/len(parts))*count)
+                        "percent": int((100 / len(parts)) * count)
                     })
 
                 sendbuf += LevelFinalizePacket.make({
@@ -84,9 +84,9 @@ class PacketHandler(object):
 
                 connection.send(PositionAndOrientationPacket.make({
                     "player_id": -1,
-                    "frac_x": int(player.coordinates[0]*32),
-                    "frac_y": int(player.coordinates[1]*32),
-                    "frac_z": int(player.coordinates[2]*32),
+                    "frac_x": int(player.coordinates[0] * 32),
+                    "frac_y": int(player.coordinates[1] * 32),
+                    "frac_z": int(player.coordinates[2] * 32),
                     "yaw": 0,
                     "pitch": 0
                 }))
@@ -108,9 +108,9 @@ class PacketHandler(object):
 
             elif packet == PositionAndOrientationPacket:
                 player = self._server.get_player_by_address(connection.get_address())
-                player.coordinates = [float(fields["frac_x"]/32.0),
-                                      float(fields["frac_y"]/32.0),
-                                      float(fields["frac_z"]/32.0)]
+                player.coordinates = [float(fields["frac_x"] / 32.0),
+                                      float(fields["frac_y"] / 32.0),
+                                      float(fields["frac_z"] / 32.0)]
 
                 player.yaw = fields["yaw"]
                 player.pitch = fields["pitch"]
@@ -148,5 +148,4 @@ class PacketHandler(object):
                 }))
 
             else:
-                print("unknown packet %s", (packet.__class__.__name__))
-
+                print("unknown packet %s", packet.__class__.__name__)

@@ -16,8 +16,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
+
 class ReadOnlyError(IOError):
     pass
+
 
 class WriteOnlyError(IOError):
     pass
@@ -32,8 +34,8 @@ class Buffer(object):
         self._offset = offset if offset else 0
 
     def read(self, length, modify_offset=True):
-        if (self._offset+length) <= len(self._buf):
-            val = self._buf[self._offset:self._offset+length]
+        if (self._offset + length) <= len(self._buf):
+            val = self._buf[self._offset:self._offset + length]
             if modify_offset:
                 self._offset += length
             return val
@@ -49,7 +51,7 @@ class Buffer(object):
         return self._buf
 
     def left(self):
-        return (len(self._buf) - self._offset)
+        return len(self._buf) - self._offset
 
 
 class ReadBuffer(Buffer):

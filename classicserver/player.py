@@ -18,6 +18,7 @@
 
 DEFAULT_COORDINATES = [127.0, 35.0, 127.0]
 
+
 class Player(object):
     player_id = None
     coordinates = DEFAULT_COORDINATES

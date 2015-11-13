@@ -80,7 +80,7 @@ class ClassicServer(object):
             try:
                 f = urllib.request.urlopen(self._heartbeat_url + (
                     "?port=%d&max=32&name=%s&public=True&version=7&salt=%s&users=%d" % (
-                    self._bind_address[1], urllib.parse.quote(self._server_name, safe=""), self._salt,
+                        self._bind_address[1], urllib.parse.quote(self._server_name, safe=""), self._salt,
                         len(self._players))
                 ))
 
@@ -194,9 +194,9 @@ class ClassicServer(object):
         save_file.close()
 
     def generate_salt(self):
-        BASE_62 = string.ascii_letters + string.digits
+        base_62 = string.ascii_letters + string.digits
         # generate a 16-char salt
-        salt = "".join([random.choice(BASE_62) for i in range(16)])
+        salt = "".join([random.choice(base_62) for i in range(16)])
         self._salt = salt
 
     def add_player(self, connection, coordinates, name):
