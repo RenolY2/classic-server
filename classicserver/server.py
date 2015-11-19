@@ -25,7 +25,7 @@ import urllib.request
 import urllib.parse
 
 from classicserver.connection import Connection
-from classicserver.packet.packet import MessagePacket, PingPacket, DespawnPlayerPacket
+from classicserver.packet.packet import MessagePacket, PingPacket, DespawnPlayerPacket, DisconnectPlayerPacket
 from classicserver.packet_handler import PacketHandler
 from classicserver.player import Player
 from classicserver.world import World
@@ -54,15 +54,18 @@ class ClassicServer(object):
     _heartbeat_url = ""
     _salt = ""
 
+    _op_players = []
+
     _world = None
 
-    def __init__(self, bind_address, server_name="", motd="", save_file="", heartbeat_url=""):
+    def __init__(self, bind_address, server_name="", motd="", save_file="", heartbeat_url="", op_players=None):
         self._bind_address = bind_address
         self._running = False
         self._server_name = server_name
         self._motd = motd
         self._save_file = save_file
         self._heartbeat_url = heartbeat_url
+        self._op_players = op_players if op_players else []
 
         self._packet_handler = PacketHandler(self)
 
@@ -199,17 +202,30 @@ class ClassicServer(object):
         salt = "".join([random.choice(base_62) for i in range(16)])
         self._salt = salt
 
-    def add_player(self, connection, coordinates, name):
+    def add_player(self, connection, coordinates, name, user_type):
         """
 
         :type connection: Connection
         """
-        player = Player(self._player_id, connection, coordinates, name)
+        player = Player(self._player_id, connection, coordinates, name, user_type)
         self._players[self._player_id] = player
         self._players_by_address[connection.get_address()] = player
         player_id = self._player_id
         self._player_id += 1
         return player_id
+
+    def kick_player(self, player_id, reason):
+        player = self._players[player_id]
+        print("[SERVER] Kicking player %s for %s" % (player.name, reason))
+        player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
+        self.broadcast(MessagePacket.make({"unused": 0xFF, "message": "Player %s kicked, %s" % (player.name, reason)}))
+        self._disconnect(player.connection)
+
+    def is_op(self, player_name):
+        if player_name in self._op_players:
+            return True
+        else:
+            return False
 
     def get_name(self):
         return self._server_name
