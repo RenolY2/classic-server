@@ -45,7 +45,7 @@ class ClassicServer(object):
     _players = {}
     _players_by_address = {}
 
-    _player_id = 0
+    _player_id = 1
 
     _server_name = ""
     _motd = ""
