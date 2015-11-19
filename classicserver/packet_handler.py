@@ -54,7 +54,7 @@ class PacketHandler(object):
                     "protocol_version": 7,
                     "server_name": self._server.get_name(),
                     "server_motd": self._server.get_motd(),
-                    "user_type": 0x64
+                    "user_type": 0x64 if self._server.is_op(fields["username"]) else 0x00
                 })
 
                 chunk = self._server.get_world().encode()
@@ -78,8 +78,9 @@ class PacketHandler(object):
                 connection.send(sendbuf)
 
                 username = fields["username"]
+                user_type = 0x64 if self._server.is_op(username) else 0x00
                 print("[SERVER] Player %s has joined!" % username)
-                player_id = self._server.add_player(connection, None, username)
+                player_id = self._server.add_player(connection, None, username, user_type)
                 player = self._server.get_player(player_id)
 
                 connection.send(PositionAndOrientationPacket.make({

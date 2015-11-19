@@ -26,10 +26,12 @@ class Player(object):
     pitch = 0
     name = ""
     client = None
+    user_type = None
 
-    def __init__(self, player_id, client, coordinates, name):
+    def __init__(self, player_id, client, coordinates, name, user_type):
         self.player_id = player_id
         self.client = client
         if coordinates:
             self.coordinates = coordinates
         self.name = name
+        self.user_type = user_type
