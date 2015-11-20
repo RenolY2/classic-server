@@ -70,6 +70,9 @@ class ClassicServer(object):
         self._op_players = op_players if op_players else []
         self._max_players = max_players
 
+        if self._max_players > 255:
+            raise ValueError("The player limit is up to 255 excluding the admin slot.")
+
         self._packet_handler = PacketHandler(self)
 
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
