@@ -60,7 +60,7 @@ class ClassicServer(object):
     _world = None
 
     def __init__(self, bind_address, server_name="", motd="", save_file="", heartbeat_url="", op_players=None,
-                 max_players=-1):
+                 max_players=32):
         self._bind_address = bind_address
         self._running = False
         self._server_name = server_name
@@ -228,7 +228,7 @@ class ClassicServer(object):
                 self._player_id += 1
 
             player = Player(player_id, connection, coordinates, name, 0x64 if self.is_op(name) else 0x00)
-            self._players[self._player_id] = player
+            self._players[player_id] = player
             self._players_by_address[connection.get_address()] = player
             return player_id
         else:
