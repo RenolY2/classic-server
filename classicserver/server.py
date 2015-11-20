@@ -218,6 +218,8 @@ class ClassicServer(object):
                         self._player_id = i
                         player_id = i
                         break
+                else:
+                    raise ValueError("No more ID's left")
 
             else:
                 self._player_id += 1
