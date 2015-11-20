@@ -78,8 +78,7 @@ class PacketHandler(object):
                 connection.send(sendbuf)
 
                 username = fields["username"]
-                user_type = 0x64 if self._server.is_op(username) else 0x00
-                player_id = self._server.add_player(connection, None, username, user_type)
+                player_id = self._server.add_player(connection, None, username)
                 print("[SERVER] Player %s has joined with ID=%d!" % (username, player_id))
                 player = self._server.get_player(player_id)
 

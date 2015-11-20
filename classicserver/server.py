@@ -205,12 +205,12 @@ class ClassicServer(object):
         salt = "".join([random.choice(base_62) for i in range(16)])
         self._salt = salt
 
-    def add_player(self, connection, coordinates, name, user_type):
+    def add_player(self, connection, coordinates, name):
         """
 
         :type connection: Connection
         """
-        if len(self._players) < self._max_players:
+        if len(self._players) < self._max_players and not self.is_op(name):
             player_id = self._player_id
             if self._player_id in self._players:
                 for i in range(256):
@@ -222,11 +222,12 @@ class ClassicServer(object):
             else:
                 self._player_id += 1
 
-            player = Player(player_id, connection, coordinates, name, user_type)
+            player = Player(player_id, connection, coordinates, name, 0x64 if self.is_op(name) else 0x00)
             self._players[self._player_id] = player
             self._players_by_address[connection.get_address()] = player
             return player_id
         else:
+            print("[SERVER] Disconnecting %s because the server is full." % name)
             connection.send(DisconnectPlayerPacket.make({"reason": "Server full"}))
 
     def kick_player(self, player_id, reason):
