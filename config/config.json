@@ -3,7 +3,8 @@
     "name": "Test Classic Server",
     "motd": "Hello, World!",
     "port": 25565,
-    "ops": []
+    "ops": [],
+    "max_players": 24
   },
 
   "save": {

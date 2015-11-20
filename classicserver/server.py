@@ -55,10 +55,12 @@ class ClassicServer(object):
     _salt = ""
 
     _op_players = []
+    _max_players = -1
 
     _world = None
 
-    def __init__(self, bind_address, server_name="", motd="", save_file="", heartbeat_url="", op_players=None):
+    def __init__(self, bind_address, server_name="", motd="", save_file="", heartbeat_url="", op_players=None,
+                 max_players=-1):
         self._bind_address = bind_address
         self._running = False
         self._server_name = server_name
@@ -66,6 +68,7 @@ class ClassicServer(object):
         self._save_file = save_file
         self._heartbeat_url = heartbeat_url
         self._op_players = op_players if op_players else []
+        self._max_players = max_players
 
         self._packet_handler = PacketHandler(self)
 
@@ -82,9 +85,9 @@ class ClassicServer(object):
         while self._running:
             try:
                 f = urllib.request.urlopen(self._heartbeat_url + (
-                    "?port=%d&max=32&name=%s&public=True&version=7&salt=%s&users=%d" % (
-                        self._bind_address[1], urllib.parse.quote(self._server_name, safe=""), self._salt,
-                        len(self._players))
+                    "?port=%d&max=%d&name=%s&public=True&version=7&salt=%s&users=%d" % (
+                        self._bind_address[1], self._max_players,
+                        urllib.parse.quote(self._server_name, safe=""), self._salt, len(self._players))
                 ))
 
                 data = f.read()
@@ -207,12 +210,24 @@ class ClassicServer(object):
 
         :type connection: Connection
         """
-        player = Player(self._player_id, connection, coordinates, name, user_type)
-        self._players[self._player_id] = player
-        self._players_by_address[connection.get_address()] = player
-        player_id = self._player_id
-        self._player_id += 1
-        return player_id
+        if len(self._players) < self._max_players:
+            player_id = self._player_id
+            if self._player_id in self._players:
+                for i in range(256):
+                    if not i in self._players:
+                        self._player_id = i
+                        player_id = i
+                        break
+
+            else:
+                self._player_id += 1
+
+            player = Player(player_id, connection, coordinates, name, user_type)
+            self._players[self._player_id] = player
+            self._players_by_address[connection.get_address()] = player
+            return player_id
+        else:
+            connection.send(DisconnectPlayerPacket.make({"reason": "Server full"}))
 
     def kick_player(self, player_id, reason):
         player = self._players[player_id]
