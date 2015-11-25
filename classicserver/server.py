@@ -47,6 +47,8 @@ class ClassicServer(object):
     _players = {}
     _players_by_address = {}
 
+    _connections_lock = None
+
     _player_id = 1
 
     _server_name = ""
@@ -76,6 +78,8 @@ class ClassicServer(object):
             raise ValueError("The player limit is up to 255 excluding the admin slot.")
 
         logging.basicConfig(level=logging.DEBUG)
+
+        self._connections_lock = threading.Lock()
 
         self._packet_handler = PacketHandler(self)
 
@@ -123,22 +127,22 @@ class ClassicServer(object):
 
     def _keep_alive_thread(self):
         while self._running:
-            try:
-                connections = [x for x in self._connections.values()]
-                for connection in connections:
-                    try:
+            self._connections_lock.acquire()
+            for connection in self._connections.values():
+                try:
                         connection.send(PingPacket.make())
-                    except IOError:
+                except IOError:
                         self._disconnect(connection)
-                time.sleep(30)
-
-            except RuntimeError:
-                pass
+            self._connections_lock.release()
+            time.sleep(30)
 
     def _connection_thread(self):
         while self._running:
             sock, addr = self._sock.accept()
+
+            self._connections_lock.acquire()
             self._connections[addr] = Connection(self, addr, sock)
+            self._connections_lock.release()
 
     def _flush_thread(self):
         while self._running:
