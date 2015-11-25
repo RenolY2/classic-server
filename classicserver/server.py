@@ -90,7 +90,11 @@ class ClassicServer(object):
         self._start()
 
     def data_hook(self, client, data):
-        self._packet_handler.handle_packet(client, data)
+        try:
+            self._packet_handler.handle_packet(client, data)
+        except (IOError, ValueError) as ex:
+            logging.error("Error in packet handler: %s" % repr(ex))
+            logging.debug(traceback.format_exc())
 
     def _heartbeat_thread(self):
         while self._running:
@@ -278,5 +282,5 @@ class ClassicServer(object):
     def get_salt(self):
         return self._salt
 
-    def __del__(self):
+    def __exit__(self):
         self._stop()

@@ -26,6 +26,8 @@ class Connection(object):
         """
         Creates a connection object
 
+        :param server: A server object, which should contain tne data_hook(connection, buf) method
+        :type server: server
         :param address: Address
         :type address tuple
         :param sock: Socket
