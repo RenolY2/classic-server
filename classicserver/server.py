@@ -21,6 +21,8 @@ import socket
 import string
 import threading
 import time
+import traceback
+import logging
 import urllib.request
 import urllib.parse
 
@@ -73,6 +75,8 @@ class ClassicServer(object):
         if self._max_players > 255:
             raise ValueError("The player limit is up to 255 excluding the admin slot.")
 
+        logging.basicConfig(level=logging.DEBUG)
+
         self._packet_handler = PacketHandler(self)
 
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -95,11 +99,11 @@ class ClassicServer(object):
 
                 data = f.read()
 
-                print("[HEARTBEAT] Heartbeat sent, json response: %s" % data.decode("utf-8"))
+                logging.debug("Heartbeat sent, json response: %s" % data.decode("utf-8"))
 
             except BaseException as ex:
-                print("[HEARTBEAT] Heartbeat failed: %s" % repr(ex))
-
+                logging.error("Heartbeat failed: %s" % repr(ex))
+                logging.debug(traceback.format_exc())
             time.sleep(45)
 
     def _save_thread(self):
@@ -112,7 +116,8 @@ class ClassicServer(object):
                 self.save_world()
                 time.sleep(120)
             except BaseException as ex:
-                print("[AUTOSAVE] Autosaving failed: %s" % repr(ex))
+                logging.error("Autosaving failed: %s" % repr(ex))
+                logging.debug(traceback.format_exc())
 
         self.save_world()
 
@@ -164,7 +169,7 @@ class ClassicServer(object):
         del self._connections[connection.get_address()]
 
         if player:
-            print("[SERVER] Player %s has quit!" % player.name)
+            logging.info("Player %s has quit" % player.name)
             del self._players_by_address[connection.get_address()]
             del self._players[player.player_id]
             self.broadcast(DespawnPlayerPacket.make({"player_id": player.player_id}))
@@ -190,13 +195,16 @@ class ClassicServer(object):
             save = open(self._save_file, "rb").read()
             self._world = World.from_save(save)
             return
-        except Exception as ex:
-            print("[INIT] Unable to load world, creating new... %s" % repr(ex))
+        except FileNotFoundError:
+            logging.info("Save file not found, creating a new one")
+        except IOError as ex:
+            logging.error("Error during loading save file: %s" % repr(ex))
+            logging.error(traceback.format_exc())
 
         self._world = World()
 
     def save_world(self):
-        print("[INIT] Saving the world....")
+        logging.info("Saving the world...")
         save_file = open(self._save_file, "wb")
         save_file.write(self._world.encode())
         save_file.flush()
@@ -232,12 +240,12 @@ class ClassicServer(object):
             self._players_by_address[connection.get_address()] = player
             return player_id
         else:
-            print("[SERVER] Disconnecting %s because the server is full." % name)
+            logging.warning("Disconnecting player %s because no free slots left." % name)
             connection.send(DisconnectPlayerPacket.make({"reason": "Server full"}))
 
     def kick_player(self, player_id, reason):
         player = self._players[player_id]
-        print("[SERVER] Kicking player %s for %s" % (player.name, reason))
+        logging.info("Kicking player %s for %s" % (player.name, reason))
         player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
         self.broadcast(MessagePacket.make({"unused": 0xFF, "message": "Player %s kicked, %s" % (player.name, reason)}))
         self._disconnect(player.connection)

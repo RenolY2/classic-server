@@ -17,6 +17,7 @@
 """
 
 import hashlib
+import logging
 
 from classicserver.packet.buffer import ReadBuffer
 from classicserver.packet.packet import *
@@ -46,9 +47,9 @@ class PacketHandler(object):
             if packet == PlayerIdentificationPacket:
                 if fields["key"] == hashlib.md5((self._server.get_salt() + fields["username"]).encode("utf-8"))\
                         .hexdigest():
-                    print("[INFO] Player %s is verified" % fields["username"])
+                    logging.info("Player %s is verified" % fields["username"])
                 else:
-                    print("[ERROR] Unable to verify player %s" % fields["username"])
+                    logging.warning("Unable to verify player %s" % fields["username"])
                     connection.send(DisconnectPlayerPacket.make({"reason": "Unable to verify name"}))
 
                 sendbuf = ServerIdentificationPacket.make({
@@ -80,7 +81,7 @@ class PacketHandler(object):
 
                 username = fields["username"]
                 player_id = self._server.add_player(connection, None, username)
-                print("[SERVER] Player %s has joined with ID=%d!" % (username, player_id))
+                logging.info("Player %s has joined with ID=%d!" % (username, player_id))
                 player = self._server.get_player(player_id)
 
                 connection.send(PositionAndOrientationPacket.make({
@@ -149,4 +150,4 @@ class PacketHandler(object):
                 }))
 
             else:
-                print("unknown packet %s", packet.__class__.__name__)
+                logging.warning("Unknown packet: %s" % packet.__class__.__name__)
