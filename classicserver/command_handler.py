@@ -35,6 +35,13 @@ class CommandHandler(object):
             if len(args) == 3:
                 try:
                     player.coordinates = [float(args[0]), float(args[1]), float(args[2])]
+                    player.connection.send(PositionAndOrientationPacket.make({"player_id": -1,
+                        "frac_x": int(player.coordinates[0]*32),
+                        "frac_y": int(player.coordinates[1]*32),
+                        "frac_z": int(player.coordinates[2]*32),
+                        "yaw": player.yaw,
+                        "pitch": player.pitch
+                    }))
                     server.broadcast(PositionAndOrientationPacket.make({"player_id": player.player_id,
                         "frac_x": int(player.coordinates[0]*32),
                         "frac_y": int(player.coordinates[1]*32),
