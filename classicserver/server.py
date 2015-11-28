@@ -92,7 +92,7 @@ class ClassicServer(object):
     def data_hook(self, client, data):
         try:
             self._packet_handler.handle_packet(client, data)
-        except (IOError, ValueError) as ex:
+        except (IOError, ValueError, BrokenPipeError) as ex:
             logging.error("Error in packet handler: %s" % repr(ex))
             logging.debug(traceback.format_exc())
 
@@ -275,6 +275,9 @@ class ClassicServer(object):
 
     def get_player_by_address(self, address):
         return self._players_by_address[address]
+
+    def get_players(self):
+        return self._players
 
     def get_world(self):
         return self._world

@@ -25,12 +25,12 @@ class Player(object):
     yaw = 0
     pitch = 0
     name = ""
-    client = None
+    connection = None
     user_type = None
 
-    def __init__(self, player_id, client, coordinates, name, user_type):
+    def __init__(self, player_id, connection, coordinates, name, user_type):
         self.player_id = player_id
-        self.client = client
+        self.connection = connection
         if coordinates:
             self.coordinates = coordinates
         self.name = name

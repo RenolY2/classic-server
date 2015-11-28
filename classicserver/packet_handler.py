@@ -18,6 +18,7 @@
 
 import hashlib
 import logging
+from classicserver.command_handler import CommandHandler
 
 from classicserver.packet.buffer import ReadBuffer
 from classicserver.packet.packet import *
@@ -144,10 +145,16 @@ class PacketHandler(object):
                 player = self._server.get_player_by_address(connection.get_address())
                 message = fields["message"]
 
-                self._server.broadcast(MessagePacket.make({
-                    "unused": 255,
-                    "message": "[%s] &a%s" % (player.name, message)
-                }))
+                if not message.startswith("/"): # If this is not a command
+                    self._server.broadcast(MessagePacket.make({
+                        "unused": 255,
+                        "message": "[%s] &a%s" % (player.name, message)
+                    }))
+                else:
+                    parts = message.split(" ")
+                    command = parts[0][1:]
+                    args = parts[1:]
+                    CommandHandler.handle_command(self._server, player, command, args)
 
             else:
                 logging.warning("Unknown packet: %s" % packet.__class__.__name__)
