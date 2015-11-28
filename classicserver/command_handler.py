@@ -16,7 +16,7 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-from classicserver.packet.packet import MessagePacket, DisconnectPlayerPacket
+from classicserver.packet.packet import MessagePacket, DisconnectPlayerPacket, PositionAndOrientationPacket
 
 HELP_TEXT = """
 &aClassic-Server Help
@@ -27,6 +27,7 @@ HELP_TEXT = """
 &e /kick &2<playerName> [reason] &b - kick a player
 """
 
+
 class CommandHandler(object):
     @staticmethod
     def handle_command(server, player, command, args):
@@ -34,38 +35,45 @@ class CommandHandler(object):
             if len(args) == 3:
                 try:
                     player.coordinates = [float(args[0]), float(args[1]), float(args[2])]
+                    server.broadcast(PositionAndOrientationPacket.make({"player_id": player.player_id,
+                        "frac_x": int(player.coordinates[0]*32),
+                        "frac_y": int(player.coordinates[1]*32),
+                        "frac_z": int(player.coordinates[2]*32),
+                        "yaw": player.yaw,
+                        "pitch": player.pitch
+                    }))
                 except ValueError:
-                    player.client.send(MessagePacket.make({"unused": 255, "message": "&4Invalid coordinates,"}))
-                    player.client.send(MessagePacket.make({"unused": 255,
+                    player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4Invalid coordinates,"}))
+                    player.connection.send(MessagePacket.make({"player_id": 0,
                                                            "message": "&4please use /tp <x> <y> <z> or"}))
-                    player.client.send(MessagePacket.make({"unused": 255, "message": "&4/tp <playerName>"}))
+                    player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4/tp <playerName>"}))
             elif len(args) == 1:
                 for target_player in server.get_players().values():
                     if target_player.name == args[1]:
                         player.coordinates = target_player.coordinates
                         break
                 else:
-                    player.client.send(MessagePacket.make({"unused": 255, "message": "&4Target player not found."}))
+                    player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4Target player not found."}))
             else:
-                player.client.send(MessagePacket.make({"unused": 255,
+                player.connection.send(MessagePacket.make({"player_id": 0,
                                                        "message": "&4Invalid arguments, please use /tp <x> <y> <z> or"}))
-                player.client.send(MessagePacket.make({"unused": 255, "message": "&4/tp <playerName>"}))
+                player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4/tp <playerName>"}))
         elif command == "kick":
             if len(args) >= 1:
                 player_name = args[0]
                 reason = " ".join(args[1:]) if len(args) > 1 else "No reason specified"
-                for target_player in server.get_players.values():
+                for target_player in server.get_players().values():
                     if target_player.name == player_name:
-                        target_player.client.send(DisconnectPlayerPacket.make({"reason": reason}))
+                        target_player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
                         break
                 else:
-                    player.client.send(MessagePacket.make({"unused": 255,
+                    player.connection.send(MessagePacket.make({"player_id": 0,
                                                            "message": "&4Couldn't find the player specified."}))
             else:
-                player.client.send(MessagePacket.make({"unused": 255,
+                player.connection.send(MessagePacket.make({"player_id": 0,
                                                        "message": "&4Usage: /kick <playerName> [reason]"}))
         elif command == "help":
             for line in HELP_TEXT.split("\n"):
                 line = line.strip()
-                player.client.send(MessagePacket.make({"unused": 255,
+                player.connection.send(MessagePacket.make({"player_id": 0,
                     "message": "%s" % line}))

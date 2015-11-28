@@ -118,7 +118,7 @@ class ClassicServer(object):
         while self._running:
             try:
                 self.broadcast(MessagePacket.make({
-                    "unused": 0xFF,
+                    "player_id": 0,
                     "message": "Autosaving the world..."
                 }))
                 self.save_world()
@@ -181,7 +181,7 @@ class ClassicServer(object):
             del self._players_by_address[connection.get_address()]
             del self._players[player.player_id]
             self.broadcast(DespawnPlayerPacket.make({"player_id": player.player_id}))
-            self.broadcast(MessagePacket.make({"unused": 0xFF, "message": "%s&f has quit"}))
+            self.broadcast(MessagePacket.make({"player_id": 0, "message": "%s&f has quit"}))
 
     def _start(self):
         self.generate_salt()
@@ -255,7 +255,7 @@ class ClassicServer(object):
         player = self._players[player_id]
         logging.info("Kicking player %s for %s" % (player.name, reason))
         player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
-        self.broadcast(MessagePacket.make({"unused": 0xFF, "message": "Player %s kicked, %s" % (player.name, reason)}))
+        self.broadcast(MessagePacket.make({"player_id": 0, "message": "Player %s kicked, %s" % (player.name, reason)}))
         self._disconnect(player.connection)
 
     def is_op(self, player_name):

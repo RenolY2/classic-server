@@ -105,7 +105,7 @@ class PacketHandler(object):
                 }), [connection.get_address()])
 
                 self._server.broadcast(MessagePacket.make({
-                    "unused": 0xFF,
+                    "player_id": player_id,
                     "message": "%s has joined!" % player.name
                 }))
 
@@ -145,10 +145,11 @@ class PacketHandler(object):
                 player = self._server.get_player_by_address(connection.get_address())
                 message = fields["message"]
 
-                if not message.startswith("/"): # If this is not a command
+                if not message.startswith("/"):
+                    # If this is not a command
                     self._server.broadcast(MessagePacket.make({
-                        "unused": 255,
-                        "message": "[%s] &a%s" % (player.name, message)
+                        "player_id": player.player_id,
+                        "message": "&e[%s] &a%s" % (player.name, message)
                     }))
                 else:
                     parts = message.split(" ")

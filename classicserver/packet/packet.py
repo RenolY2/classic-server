@@ -112,7 +112,7 @@ class PositionAndOrientationPacket(Packet):
 
 class MessagePacket(Packet):
     ID = 0x0d
-    FIELDS = [ByteField("unused"), StringField("message")]
+    FIELDS = [ByteField("player_id"), StringField("message")]
 
 
 class ServerIdentificationPacket(Packet):
