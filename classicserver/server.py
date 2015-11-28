@@ -221,7 +221,7 @@ class ClassicServer(object):
     def generate_salt(self):
         base_62 = string.ascii_letters + string.digits
         # generate a 16-char salt
-        salt = "".join([random.choice(base_62) for i in range(16)])
+        salt = "".join([random.choice(base_62) for _ in range(16)])
         self._salt = salt
 
     def add_player(self, connection, coordinates, name):
@@ -233,7 +233,7 @@ class ClassicServer(object):
             player_id = self._player_id
             if self._player_id in self._players:
                 for i in range(256):
-                    if not i in self._players:
+                    if i not in self._players:
                         self._player_id = i
                         player_id = i
                         break

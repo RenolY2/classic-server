@@ -36,23 +36,23 @@ class CommandHandler(object):
                 try:
                     player.coordinates = [float(args[0]), float(args[1]), float(args[2])]
                     player.connection.send(PositionAndOrientationPacket.make({"player_id": -1,
-                        "frac_x": int(player.coordinates[0]*32),
-                        "frac_y": int(player.coordinates[1]*32),
-                        "frac_z": int(player.coordinates[2]*32),
-                        "yaw": player.yaw,
-                        "pitch": player.pitch
-                    }))
+                                                                              "frac_x": int(player.coordinates[0] * 32),
+                                                                              "frac_y": int(player.coordinates[1] * 32),
+                                                                              "frac_z": int(player.coordinates[2] * 32),
+                                                                              "yaw": player.yaw,
+                                                                              "pitch": player.pitch
+                                                                              }))
                     server.broadcast(PositionAndOrientationPacket.make({"player_id": player.player_id,
-                        "frac_x": int(player.coordinates[0]*32),
-                        "frac_y": int(player.coordinates[1]*32),
-                        "frac_z": int(player.coordinates[2]*32),
-                        "yaw": player.yaw,
-                        "pitch": player.pitch
-                    }))
+                                                                        "frac_x": int(player.coordinates[0] * 32),
+                                                                        "frac_y": int(player.coordinates[1] * 32),
+                                                                        "frac_z": int(player.coordinates[2] * 32),
+                                                                        "yaw": player.yaw,
+                                                                        "pitch": player.pitch
+                                                                        }))
                 except ValueError:
                     player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4Invalid coordinates,"}))
                     player.connection.send(MessagePacket.make({"player_id": 0,
-                                                           "message": "&4please use /tp <x> <y> <z> or"}))
+                                                               "message": "&4please use /tp <x> <y> <z> or"}))
                     player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4/tp <playerName>"}))
             elif len(args) == 1:
                 for target_player in server.get_players().values():
@@ -60,10 +60,13 @@ class CommandHandler(object):
                         player.coordinates = target_player.coordinates
                         break
                 else:
-                    player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4Target player not found."}))
+                    player.connection.send(MessagePacket.make({"player_id": 0,
+                                                               "message": "&4Target player not found."}))
             else:
-                player.connection.send(MessagePacket.make({"player_id": 0,
-                                                       "message": "&4Invalid arguments, please use /tp <x> <y> <z> or"}))
+                player.connection.send(MessagePacket.make({
+                    "player_id": 0,
+                    "message": "&4Invalid arguments, please use /tp <x> <y> <z> or"
+                }))
                 player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4/tp <playerName>"}))
         elif command == "kick":
             if len(args) >= 1:
@@ -75,12 +78,12 @@ class CommandHandler(object):
                         break
                 else:
                     player.connection.send(MessagePacket.make({"player_id": 0,
-                                                           "message": "&4Couldn't find the player specified."}))
+                                                              "message": "&4Couldn't find the player specified."}))
             else:
                 player.connection.send(MessagePacket.make({"player_id": 0,
-                                                       "message": "&4Usage: /kick <playerName> [reason]"}))
+                                                           "message": "&4Usage: /kick <playerName> [reason]"}))
         elif command == "help":
             for line in HELP_TEXT.split("\n"):
                 line = line.strip()
                 player.connection.send(MessagePacket.make({"player_id": 0,
-                    "message": "%s" % line}))
+                                                           "message": "%s" % line}))
