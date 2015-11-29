@@ -135,7 +135,7 @@ class ClassicServer(object):
             for connection in self._connections.values():
                 try:
                         connection.send(PingPacket.make())
-                except IOError:
+                except (IOError, BrokenPipeError):
                         self._disconnect(connection)
             self._connections_lock.release()
             time.sleep(30)
@@ -155,7 +155,7 @@ class ClassicServer(object):
                 for connection in connections:
                     try:
                         connection.flush()
-                    except IOError:
+                    except (IOError, BrokenPipeError):
                         self._disconnect(connection)
             except RuntimeError:
                 pass
