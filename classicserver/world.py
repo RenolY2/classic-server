@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+import logging
 
 import struct
 import gzip
@@ -30,7 +31,7 @@ class World(object):
 
     @staticmethod
     def _generate():
-        print("[WORLD] Generating...")
+        logging.info("Generating the world...")
         blocks = bytearray(WORLD_WIDTH * WORLD_HEIGHT * WORLD_DEPTH)
 
         for x in range(WORLD_WIDTH):
@@ -38,7 +39,7 @@ class World(object):
                 for z in range(WORLD_DEPTH):
                     blocks[x + WORLD_DEPTH * (z + WORLD_WIDTH * y)] = 0 if y > 32 else (2 if y == 32 else 3)
 
-        print("[WORLD] done.")
+        logging.info("World generation done.")
         return blocks
 
     def get_block(self, x, y, z):
