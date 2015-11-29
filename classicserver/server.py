@@ -181,7 +181,7 @@ class ClassicServer(object):
             del self._players_by_address[connection.get_address()]
             del self._players[player.player_id]
             self.broadcast(DespawnPlayerPacket.make({"player_id": player.player_id}))
-            self.broadcast(MessagePacket.make({"player_id": 0, "message": "%s&f has quit"}))
+            self.broadcast(MessagePacket.make({"player_id": 0, "message": "&e%s&f has quit!" % player.name}))
 
     def _start(self):
         self.generate_salt()
