@@ -106,7 +106,7 @@ class PacketHandler(object):
 
                 self._server.broadcast(MessagePacket.make({
                     "player_id": player_id,
-                    "message": "%s has joined!" % player.name
+                    "message": "&e%s&f has joined!" % player.name
                 }))
 
             elif packet == PositionAndOrientationPacket:
