@@ -69,19 +69,23 @@ class CommandHandler(object):
                 }))
                 player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4/tp <playerName>"}))
         elif command == "kick":
-            if len(args) >= 1:
-                player_name = args[0]
-                reason = " ".join(args[1:]) if len(args) > 1 else "No reason specified"
-                for target_player in server.get_players().values():
-                    if target_player.name == player_name:
-                        target_player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
-                        break
+            if server.is_op(player.name):
+                if len(args) >= 1:
+                    player_name = args[0]
+                    reason = " ".join(args[1:]) if len(args) > 1 else "No reason specified"
+                    for target_player in server.get_players().values():
+                        if target_player.name == player_name:
+                            target_player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
+                            break
+                    else:
+                        player.connection.send(MessagePacket.make({"player_id": 0,
+                                                                  "message": "&4Couldn't find the player specified."}))
                 else:
                     player.connection.send(MessagePacket.make({"player_id": 0,
-                                                              "message": "&4Couldn't find the player specified."}))
+                                                               "message": "&4Usage: /kick <playerName> [reason]"}))
             else:
                 player.connection.send(MessagePacket.make({"player_id": 0,
-                                                           "message": "&4Usage: /kick <playerName> [reason]"}))
+                    "message": "&4You need to be an op to do that!"}))
         elif command == "help":
             for line in HELP_TEXT.split("\n"):
                 line = line.strip()
