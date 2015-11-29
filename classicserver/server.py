@@ -150,23 +150,22 @@ class ClassicServer(object):
 
     def _flush_thread(self):
         while self._running:
-            try:
-                connections = [x for x in self._connections.values()]
-                for connection in connections:
-                    try:
-                        connection.flush()
-                    except (IOError, BrokenPipeError):
-                        self._disconnect(connection)
-            except RuntimeError:
-                pass
+            self._connections_lock.acquire()
+            for connection in self._connections.values():
+                try:
+                    connection.flush()
+                except (IOError, BrokenPipeError):
+                    self._disconnect(connection)
+            self._connections_lock.release()
 
     def broadcast(self, data, ignore=None):
         if not ignore:
             ignore = []
-
+        self._connections_lock.acquire()
         for connection in self._connections.values():
             if connection.get_address() not in ignore:
                 connection.send(data)
+        self._connections_lock.release()
 
     def _disconnect(self, connection):
         player = None
@@ -174,7 +173,9 @@ class ClassicServer(object):
         if connection.get_address() in self._players_by_address:
             player = self.get_player_by_address(connection.get_address())
 
+        self._connections_lock.acquire()
         del self._connections[connection.get_address()]
+        self._connections_lock.release()
 
         if player:
             logging.info("Player %s has quit" % player.name)
