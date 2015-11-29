@@ -229,7 +229,7 @@ class ClassicServer(object):
 
         :type connection: Connection
         """
-        if len(self._players) < self._max_players and not self.is_op(name):
+        if (len(self._players) < self._max_players) and not self.is_op(name):
             player_id = self._player_id
             if self._player_id in self._players:
                 for i in range(256):
