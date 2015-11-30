@@ -49,7 +49,7 @@ class ClassicServer(object):
 
     _connections_lock = None
 
-    _player_id = 1
+    _player_id = 0
 
     _server_name = ""
     _motd = ""
