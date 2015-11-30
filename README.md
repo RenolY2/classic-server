@@ -1,5 +1,6 @@
 # classic-server
-A very basic Minecraft Classic server. It only supports 256x64x256 worlds and has only a flat genrator.
+A very basic Minecraft Classic server. It only supports 256x64x256 worlds and has only a flat generator.
+**Requires Python 3.4 and higher to run!**
 
 Usage
 -----
