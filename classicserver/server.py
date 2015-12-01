@@ -48,6 +48,7 @@ class ClassicServer(object):
     _players_by_address = {}
 
     _connections_lock = None
+    _players_lock = None
 
     _player_id = 0
 
@@ -80,6 +81,7 @@ class ClassicServer(object):
         logging.basicConfig(level=logging.DEBUG)
 
         self._connections_lock = threading.RLock()
+        self._players_lock = threading.RLock()
 
         self._packet_handler = PacketHandler(self)
 
@@ -149,7 +151,7 @@ class ClassicServer(object):
     def _flush_thread(self):
         while self._running:
             with self._connections_lock:
-                for connection in [x for x in self._connections.values()]:
+                for connection in self._connections.copy().values():
                     try:
                         connection.flush()
                     except (IOError, BrokenPipeError):
@@ -241,8 +243,9 @@ class ClassicServer(object):
                 self._player_id += 1
 
             player = Player(player_id, connection, coordinates, name, 0x64 if self.is_op(name) else 0x00)
-            self._players[player_id] = player
-            self._players_by_address[connection.get_address()] = player
+            with self._players_lock:
+                self._players[player_id] = player
+                self._players_by_address[connection.get_address()] = player
             return player_id
         else:
             logging.warning("Disconnecting player %s because no free slots left." % name)
@@ -252,6 +255,8 @@ class ClassicServer(object):
         player = self._players[player_id]
         logging.info("Kicking player %s for %s" % (player.name, reason))
         player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
+        with self._players_lock:
+            del self._players[player_id]
         self.broadcast(MessagePacket.make({"player_id": 0, "message": "Player %s kicked, %s" % (player.name, reason)}))
         self._disconnect(player.connection)
 
@@ -274,7 +279,9 @@ class ClassicServer(object):
         return self._players_by_address[address]
 
     def get_players(self):
-        return self._players
+        with self._players_lock:
+            players_copy = self._players.copy()
+        return players_copy
 
     def get_world(self):
         return self._world

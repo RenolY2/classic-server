@@ -52,6 +52,12 @@ class PacketHandler(object):
                 else:
                     logging.warning("Unable to verify player %s" % fields["username"])
                     connection.send(DisconnectPlayerPacket.make({"reason": "Unable to verify name"}))
+                    continue
+
+                for player in self._server.get_players().values():
+                    if player.name == fields["username"]:
+                        connection.send(DisconnectPlayerPacket.make({"reason":
+                                        "Another player with the same name is already on this server"}))
 
                 sendbuf = ServerIdentificationPacket.make({
                     "protocol_version": 7,
