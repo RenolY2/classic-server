@@ -79,7 +79,7 @@ class ClassicServer(object):
 
         logging.basicConfig(level=logging.DEBUG)
 
-        self._connections_lock = threading.Lock()
+        self._connections_lock = threading.RLock()
 
         self._packet_handler = PacketHandler(self)
 
@@ -131,41 +131,37 @@ class ClassicServer(object):
 
     def _keep_alive_thread(self):
         while self._running:
-            self._connections_lock.acquire()
-            for connection in self._connections.values():
-                try:
-                        connection.send(PingPacket.make())
-                except (IOError, BrokenPipeError):
-                        self._disconnect(connection)
-            self._connections_lock.release()
+            with self._connections_lock:
+                for connection in self._connections.values():
+                    try:
+                            connection.send(PingPacket.make())
+                    except (IOError, BrokenPipeError):
+                            self._disconnect(connection)
             time.sleep(30)
 
     def _connection_thread(self):
         while self._running:
             sock, addr = self._sock.accept()
 
-            self._connections_lock.acquire()
-            self._connections[addr] = Connection(self, addr, sock)
-            self._connections_lock.release()
+            with self._connections_lock:
+                self._connections[addr] = Connection(self, addr, sock)
 
     def _flush_thread(self):
         while self._running:
-            self._connections_lock.acquire()
-            for connection in self._connections.values():
-                try:
-                    connection.flush()
-                except (IOError, BrokenPipeError):
-                    self._disconnect(connection)
-            self._connections_lock.release()
+            with self._connections_lock:
+                for connection in [x for x in self._connections.values()]:
+                    try:
+                        connection.flush()
+                    except (IOError, BrokenPipeError):
+                        self._disconnect(connection)
 
     def broadcast(self, data, ignore=None):
         if not ignore:
             ignore = []
-        self._connections_lock.acquire()
-        for connection in self._connections.values():
-            if connection.get_address() not in ignore:
-                connection.send(data)
-        self._connections_lock.release()
+            with self._connections_lock:
+                for connection in self._connections.values():
+                    if connection.get_address() not in ignore:
+                        connection.send(data)
 
     def _disconnect(self, connection):
         player = None
@@ -173,9 +169,9 @@ class ClassicServer(object):
         if connection.get_address() in self._players_by_address:
             player = self.get_player_by_address(connection.get_address())
 
-        self._connections_lock.acquire()
-        del self._connections[connection.get_address()]
-        self._connections_lock.release()
+        with self._connections_lock:
+            del self._connections[connection.get_address()]
+
 
         if player:
             logging.info("Player %s has quit" % player.name)
