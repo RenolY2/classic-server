@@ -91,6 +91,20 @@ class PacketHandler(object):
                 logging.info("Player %s has joined with ID=%d!" % (username, player_id))
                 player = self._server.get_player(player_id)
 
+                for server_player in self._server.get_players().values():
+                    if server_player.player_id != player_id:
+                        connection.send(SpawnPlayerPacket.make({
+                            "player_id": server_player.player_id,
+                            "username": server_player.name,
+                            "frac_x": int(server_player.coordinates[0] * 32),
+                            "frac_y": int(server_player.coordinates[1] * 32),
+                            "frac_z": int(server_player.coordinates[2] * 32),
+                            "yaw": server_player.yaw,
+                            "pitch": server_player.pitch
+                        }))
+
+                connection.send()
+
                 connection.send(PositionAndOrientationPacket.make({
                     "player_id": -1,
                     "frac_x": int(player.coordinates[0] * 32),
