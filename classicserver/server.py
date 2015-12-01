@@ -163,7 +163,10 @@ class ClassicServer(object):
             with self._connections_lock:
                 for connection in self._connections.values():
                     if connection.get_address() not in ignore:
-                        connection.send(data)
+                        try:
+                            connection.send(data)
+                        except (IOError, BrokenPipeError):
+                            self._disconnect(connection)
 
     def _disconnect(self, connection):
         player = None
