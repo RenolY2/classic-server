@@ -96,9 +96,9 @@ class PacketHandler(object):
                         connection.send(SpawnPlayerPacket.make({
                             "player_id": server_player.player_id,
                             "username": server_player.name,
-                            "frac_x": int(server_player.coordinates[0] * 32),
-                            "frac_y": int(server_player.coordinates[1] * 32),
-                            "frac_z": int(server_player.coordinates[2] * 32),
+                            "x": int(server_player.coordinates[0]),
+                            "y": int(server_player.coordinates[1]),
+                            "z": int(server_player.coordinates[2]),
                             "yaw": server_player.yaw,
                             "pitch": server_player.pitch
                         }))
