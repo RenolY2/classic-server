@@ -75,7 +75,7 @@ class CommandHandler(object):
                     reason = " ".join(args[1:]) if len(args) > 1 else "No reason specified"
                     for target_player in server.get_players().values():
                         if target_player.name == player_name:
-                            target_player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
+                            server.kick_player(target_player.id, reason)
                             break
                     else:
                         player.connection.send(MessagePacket.make({"player_id": 0,
