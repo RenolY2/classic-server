@@ -103,7 +103,6 @@ class PacketHandler(object):
                             "pitch": server_player.pitch
                         }))
 
-                connection.send()
 
                 connection.send(PositionAndOrientationPacket.make({
                     "player_id": -1,
