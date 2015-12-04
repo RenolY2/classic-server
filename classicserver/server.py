@@ -160,13 +160,14 @@ class ClassicServer(object):
     def broadcast(self, data, ignore=None):
         if not ignore:
             ignore = []
-            with self._connections_lock:
-                for connection in self._connections.values():
-                    if connection.get_address() not in ignore:
-                        try:
-                            connection.send(data)
-                        except (IOError, BrokenPipeError):
-                            self._disconnect(connection)
+            
+        with self._connections_lock:
+            for connection in self._connections.values():
+                if connection.get_address() not in ignore:
+                    try:
+                        connection.send(data)
+                    except (IOError, BrokenPipeError):
+                        self._disconnect(connection)
 
     def _disconnect(self, connection):
         player = None
