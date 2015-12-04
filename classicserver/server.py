@@ -178,7 +178,6 @@ class ClassicServer(object):
         with self._connections_lock:
             del self._connections[connection.get_address()]
 
-
         if player:
             logging.info("Player %s has quit" % player.name)
             del self._players_by_address[connection.get_address()]
