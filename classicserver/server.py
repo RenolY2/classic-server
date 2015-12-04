@@ -161,8 +161,9 @@ class ClassicServer(object):
         if not ignore:
             ignore = []
             
-        with self._connections_lock:
-            for connection in self._connections.values():
+        with self._players_lock:
+            for player in self._players.values():
+                connection = player.connection
                 if connection.get_address() not in ignore:
                     try:
                         connection.send(data)
