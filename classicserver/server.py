@@ -64,16 +64,16 @@ class ClassicServer(object):
 
     _world = None
 
-    def __init__(self, bind_address, server_name="", motd="", save_file="", heartbeat_url="", op_players=None,
-                 max_players=32):
-        self._bind_address = bind_address
+    def __init__(self, config):
+        # bind_address, server_name="", motd="", save_file="", heartbeat_url="", op_players=None, max_players=32
+        self._bind_address = ("0.0.0.0", config["server"]["port"])
         self._running = False
-        self._server_name = server_name
-        self._motd = motd
-        self._save_file = save_file
-        self._heartbeat_url = heartbeat_url
-        self._op_players = op_players if op_players else []
-        self._max_players = max_players
+        self._server_name = config["server"]["name"]
+        self._motd = config["server"]["motd"]
+        self._save_file = config["save"]["file"]
+        self._heartbeat_url = config["heartbeat_url"]
+        self._op_players = config["server"]["ops"]
+        self._max_players = config["server"]["max_players"]
 
         if self._max_players > 255:
             raise ValueError("The player limit is up to 255 excluding the admin slot.")
