@@ -167,7 +167,7 @@ class PacketHandler(object):
                     # If this is not a command
                     self._server.broadcast(MessagePacket.make({
                         "player_id": player.player_id,
-                        "message": "&e[%s] &a%s" % (player.name, message)
+                        "message": "&e%s &f%s" % (player.name, message)
                     }))
                 else:
                     parts = message.split(" ")
