@@ -56,8 +56,22 @@ class CommandHandler(object):
                     player.connection.send(MessagePacket.make({"player_id": 0, "message": "&4/tp <playerName>"}))
             elif len(args) == 1:
                 for target_player in server.get_players().values():
-                    if target_player.name == args[1]:
+                    if target_player.name == args[0]:
                         player.coordinates = target_player.coordinates
+                        player.connection.send(PositionAndOrientationPacket.make({"player_id": -1,
+                          "frac_x": int(player.coordinates[0] * 32),
+                          "frac_y": int(player.coordinates[1] * 32),
+                          "frac_z": int(player.coordinates[2] * 32),
+                          "yaw": player.yaw,
+                          "pitch": player.pitch
+                        }))
+                        server.broadcast(PositionAndOrientationPacket.make({"player_id": player.player_id,
+                            "frac_x": int(player.coordinates[0] * 32),
+                            "frac_y": int(player.coordinates[1] * 32),
+                            "frac_z": int(player.coordinates[2] * 32),
+                            "yaw": player.yaw,
+                            "pitch": player.pitch
+                        }))
                         break
                 else:
                     player.connection.send(MessagePacket.make({"player_id": 0,
