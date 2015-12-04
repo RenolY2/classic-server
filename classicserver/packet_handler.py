@@ -18,6 +18,7 @@
 
 import hashlib
 import logging
+import traceback
 from classicserver.command_handler import CommandHandler
 
 from classicserver.packet.buffer import ReadBuffer
@@ -41,8 +42,9 @@ class PacketHandler(object):
         while buf.left() > 0:
             try:
                 packet, fields = Packet.from_buffer(buf, True)
-            except BaseException as e:
-                print("Unable to decode packets: %s" % repr(e))
+            except Exception as ex:
+                logging.error("Unable to decode packets: %s" % repr(ex))
+                logging.debug(traceback.format_exc())
                 break
 
             if packet == PlayerIdentificationPacket:
