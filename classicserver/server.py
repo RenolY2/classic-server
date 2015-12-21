@@ -133,35 +133,47 @@ class ClassicServer(object):
 
     def _keep_alive_thread(self):
         while self._running:
+            logging.info("KEEP ALIVE THREAD: Acquiring connection lock")
             with self._connections_lock:
+                logging.info("KEEP ALIVE: connection lock acquired")
                 for connection in self._connections.values():
                     try:
                             connection.send(PingPacket.make())
                     except (IOError, BrokenPipeError):
                             self._disconnect(connection)
+            logging.info("KEEP ALIVE: connection lock released")
             time.sleep(30)
 
     def _connection_thread(self):
         while self._running:
             sock, addr = self._sock.accept()
 
+            logging.info("CONNECTION THREAD: Acquiring connection lock")
             with self._connections_lock:
+                logging.info("CONNECTION THREAD: connection lock acquired")
                 self._connections[addr] = Connection(self, addr, sock)
+            logging.info("CONNECTION THREAD: connection lock released")
 
     def _flush_thread(self):
         while self._running:
+            logging.info("FLUSH THREAD: Acquiring connection lock")
             with self._connections_lock:
+                logging.info("FLUSH THREAD: connection lock acquired")
                 for connection in self._connections.copy().values():
                     try:
                         connection.flush()
                     except (IOError, BrokenPipeError):
                         self._disconnect(connection)
+            logging.info("FLUSH THREAD: connection lock released")
+            time.sleep(0.3)
 
     def broadcast(self, data, ignore=None):
         if not ignore:
             ignore = []
-            
+
+        logging.info("BROADCAST: Acquiring player lock")
         with self._players_lock:
+            logging.info("BROADCAST: player lock acquired")
             for player in self._players.values():
                 connection = player.connection
                 if connection.get_address() not in ignore:
@@ -169,6 +181,7 @@ class ClassicServer(object):
                         connection.send(data)
                     except (IOError, BrokenPipeError):
                         self._disconnect(connection)
+        logging.info("BROADCAST: player lock released")
 
     def _disconnect(self, connection):
         player = None
@@ -176,8 +189,11 @@ class ClassicServer(object):
         if connection.get_address() in self._players_by_address:
             player = self.get_player_by_address(connection.get_address())
 
+        logging.info("DISCONNECT: Acquiring connection lock")
         with self._connections_lock:
+            logging.info("DISCONNECT: connection lock acquired")
             del self._connections[connection.get_address()]
+        logging.info("DISCONNECT: connection lock released")
 
         if player:
             logging.info("Player %s has quit" % player.name)
@@ -247,9 +263,12 @@ class ClassicServer(object):
                 self._player_id += 1
 
             player = Player(player_id, connection, coordinates, name, 0x64 if self.is_op(name) else 0x00)
+            logging.info("ADD PLAYER: acquiring player lock")
             with self._players_lock:
+                logging.info("ADD PLAYER: player lock acquired")
                 self._players[player_id] = player
                 self._players_by_address[connection.get_address()] = player
+            logging.info("ADD PLAYER: player lock released")
             return player_id
         else:
             logging.warning("Disconnecting player %s because no free slots left." % name)
@@ -259,8 +278,13 @@ class ClassicServer(object):
         player = self._players[player_id]
         logging.info("Kicking player %s for %s" % (player.name, reason))
         player.connection.send(DisconnectPlayerPacket.make({"reason": reason}))
+
+        logging.info("KICK PLAYER: acquiring player lock")
         with self._players_lock:
+            logging.info("KICK PLAYER: player lock acquired")
             del self._players[player_id]
+        logging.info("KICK PLAYER: player lock released")
+
         self.broadcast(MessagePacket.make({"player_id": 0, "message": "Player %s kicked, %s" % (player.name, reason)}))
         self._disconnect(player.connection)
 
@@ -283,8 +307,11 @@ class ClassicServer(object):
         return self._players_by_address[address]
 
     def get_players(self):
+        logging.info("GET PLAYERS: acquiring player lock")
         with self._players_lock:
+            logging.info("GET PLAYERS: player lock acquired")
             players_copy = self._players.copy()
+        logging.info("GET PLAYERS: player lock released")
         return players_copy
 
     def get_world(self):
